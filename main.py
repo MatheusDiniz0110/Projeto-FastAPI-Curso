@@ -7,8 +7,6 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 app = FastAPI()
 
 from order_routes import order_router
