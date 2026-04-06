@@ -15,7 +15,7 @@ async def orders():
 
 @order_router.post("/pedidos")
 async def criar_pedido(pedido_schema: PedidoSchema, session: Session = Depends(pegar_sessao)):
-    novo_pedido = Pedidos(usuario=PedidoSchema.id_usuario)
+    novo_pedido = Pedidos(usuario=pedido_schema.id_usuario)
     session.add(novo_pedido)
     session.commit()
     return {"message": f"Pedido criado com sucesso para o usuário {novo_pedido.id_usuario}"}
