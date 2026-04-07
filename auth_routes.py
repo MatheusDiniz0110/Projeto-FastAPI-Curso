@@ -30,4 +30,3 @@ async def criar_conta(usuario_schema: UsuarioSchema, session: Session = Depends(
         session.commit()
         return {"message": f"usuário cadastrado com sucesso {usuario_schema.email}"}
 
-    
