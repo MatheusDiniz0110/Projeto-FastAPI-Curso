@@ -58,3 +58,10 @@ class Item(Base):
     size = Column("size", String)
     unit_price = Column("unit_price", Float)
     order_id = Column("order_id", ForeignKey('Orders.id'))
+
+    def __init__(self, quantity: int, flavor: str, size: str, unit_price: float, order_id: int):
+        self.quantity = quantity
+        self.flavor = flavor
+        self.size = size
+        self.unit_price = unit_price
+        self.order_id = order_id
