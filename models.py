@@ -1,65 +1,60 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import declarative_base
+from sqlalchemy_utils.types import ChoiceType
 
-# Cria a conexão do banco de dados SQLite
-db = create_engine("sqlite:///banco.db")
+# Cria a conexão com o banco de dados SQLite
+db = create_engine('sqlite:///banco.db')
 
-# Cria a base do banco de dados
+# Cria a classe base para os modelos do SQLAlchemy
 Base = declarative_base()
 
-# Criar as classes/tabelas do banco
-class Usuario(Base):
-    __tablename__ = "usuarios"
-    
-    id = Column("id", Integer, primary_key=True, autoincrement=True)
-    nome = Column('nome', String)
-    email = Column('email', String, nullable=False)
-    senha = Column('senha', String)
-    ativo = Column('ativo', Boolean)
-    admin = Column('admin', Boolean, default=False)
+# Classes do banco de dados
+class User(Base):
+    __tablename__ = 'Users'
 
-    def __init__(self, nome, email, senha, ativo=True, admin=False):
-        self.nome = nome
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    name = Column("name", String)
+    email = Column("email", String, nullable=False, unique=True)
+    senha = Column("senha", String)
+    ativo = Column("ativo", Boolean, default=True)
+    admin = Column("admin", Boolean, default=False)
+
+    def __init__(self, name: str, email: str, senha: str, ativo: bool = True, admin: bool = False):
+        self.name = name
         self.email = email
         self.senha = senha
         self.ativo = ativo
         self.admin = admin
 
-class Pedidos(Base):
-    __tablename__ = "pedidos"
 
-    #ESCOLHAS_STATUS = (
-    #    ("PENDENTE", "PENDENTE"),
-    #    ("CONCLUÍDO", "CONCLUÍDO"),
-    #    ("CANCELADO", "CANCELADO")
-    #)
+class Order(Base):
+    __tablename__ = 'Orders'
+
+    STATUS_ORDERS = (
+        ("PENDENTE", "PENDENTE"),
+        ("FINALIZADO", "FINALIZADO"),
+        ("CANCELADO", "CANCELADO")
+
+    )
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    status = Column('status', String)
-    usuario = Column('usuario', ForeignKey("usuarios.id"))
-    preco = Column('preco', Float)
-    #items =   
+    status = Column("status", ChoiceType(choices=STATUS_ORDERS), default="PENDENTE")
+    user_id = Column("user_id", ForeignKey('Users.id'))
+    price = Column("price", Float)
+    # items = 
 
-    def __init__(self, usuario, status="PENDENTE", preco=0):
-        self.usuario = usuario
+    def __init__(self, user_id: int, price: float, status: str = "PENDENTE"):
         self.status = status
-        self.preco = preco
+        self.user_id = user_id
+        self.price = price
 
-class ItemPedido(Base):
-    __tablename__ = "itens_pedido"
+
+class Item(Base):
+    __tablename__ = 'Items'
 
     id = Column("id", Integer, primary_key=True, autoincrement=True)
-    quantidade = Column('quantidade', Integer)
-    sabor = Column('sabor', String)
-    tamanho = Column('tamanho', String)
-    preco_unitario = Column('preco_unitario', Float)
-    pedido = Column('pedido', ForeignKey("pedidos.id"))
-
-    def __init__(self, quantidade, sabor, tamanho, preco_unitario, pedido):
-        self.quantidade = quantidade
-        self.sabor = sabor
-        self.tamanho = tamanho
-        self.preco_unitario = preco_unitario
-        self.pedido = pedido
-
-# Cria os metadados do banco de dados
+    quantity = Column("quantity", Integer)
+    flavor = Column("flavor", String)
+    size = Column("size", String)
+    unit_price = Column("unit_price", Float)
+    order_id = Column("order_id", ForeignKey('Orders.id'))
