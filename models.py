@@ -19,11 +19,11 @@ class User(Base):
     ativo = Column("ativo", Boolean, default=True)
     admin = Column("admin", Boolean, default=False)
 
-    def __init__(self, name: str, email: str, senha: str, ativo: bool = True, admin: bool = False):
+    def __init__(self, name: str, email: str, password: str, active: bool = True, admin: bool = False):
         self.name = name
         self.email = email
-        self.senha = senha
-        self.ativo = ativo
+        self.password = password
+        self.active = active
         self.admin = admin
 
 
