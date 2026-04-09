@@ -15,8 +15,8 @@ class User(Base):
     id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column("name", String)
     email = Column("email", String, nullable=False, unique=True)
-    senha = Column("senha", String)
-    ativo = Column("ativo", Boolean, default=True)
+    password = Column("password", String)
+    active = Column("active", Boolean, default=True)
     admin = Column("admin", Boolean, default=False)
 
     def __init__(self, name: str, email: str, password: str, active: bool = True, admin: bool = False):
