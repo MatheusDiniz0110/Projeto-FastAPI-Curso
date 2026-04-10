@@ -10,11 +10,16 @@ from datetime import datetime, timedelta, timezone
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-def criar_token(user_id):
-    expire_date = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+def create_token(user_id, duration=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+    expire_date = datetime.now(timezone.utc) + duration
     info_dict = {"sub": user_id, "exp": expire_date}
-    encoded_jwt = jwt.encode(info_dict, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(info_dict, SECRET_KEY, algorithm=ALGORITHM)    
     return encoded_jwt
+
+def verify_token(token: str, session: Session = Depends(get_session)):
+    # verificar o token e extrair o ID do user
+    user = session.query(User).filter(User.id==1).first()
+    return user
 
 def auth_user(email, senha, session):
     user = session.query(User).filter(User.email==email).first()
@@ -51,12 +56,20 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
     if not user:
         raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais inválidas!")
     else:
-        access_token = criar_token(user.id)
+        access_token = create_token(user.id)
+        refresh_token = create_token(user.id, duration=timedelta(days=7))
         return {
-            "access_token": access_token, 
+            "access_token": access_token,
+            "refresh_token": refresh_token, 
             "token_type": "bearer"
             }
         
-        # JWT Bearer
-        # header = {"Authorization": f"Bearer {access_token}"}
-
+@auth_router.get("/refresh")
+async def use_refresh_token(token: str, session: Session = Depends(get_session)):
+    user = verify_token(token, session)
+    access_token = create_token(user.id)
+    return {
+            "access_token": access_token,
+            "token_type": "bearer"
+            }
+        
