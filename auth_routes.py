@@ -3,7 +3,7 @@ from models import User
 from sqlalchemy.orm import Session
 from dependencies import get_session
 from main import bcrypt_context
-from schemas import UserSchema
+from schemas import UserSchema, LoginSchema
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,4 +25,11 @@ async def create_account(user_schema: UserSchema, session: Session = Depends(get
         session.add(novo_usuario)
         session.commit()
         return {"message": f"Usuário criado com sucesso! {user_schema.email}"}
+    
+@auth_router.post("/login")
+async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
+    '''
+    Essa é a rota de login do nosso sistema. Ela deve receber o email e a senha do usuário, verificar se o email existe no banco de dados e se a senha está correta.
+    '''
+    return {"message": "Você está na rota de login!"}
 
