@@ -2,15 +2,27 @@ from fastapi import APIRouter, HTTPException, Depends
 from models import User
 from sqlalchemy.orm import Session
 from dependencies import get_session
-from main import bcrypt_context
+from main import bcrypt_context, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from schemas import UserSchema, LoginSchema
+from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 def criar_token(user_id):
-    token = f"aimeucuzinho{user_id}1234567890"
-    return token
+    expire_date = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    info_dict = {"sub": user_id, "exp": expire_date}
+    encoded_jwt = jwt.encode(info_dict, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def auth_user(email, senha, session):
+    user = session.query(User).filter(User.email==email).first()
+    if not user:
+        return False
+    elif not bcrypt_context.verify(senha, user.password): # Verifica se a senha fornecida corresponde à senha armazenada no banco de dados
+        return False
+    return user
 
 @auth_router.get("/login")
 async def auth():
@@ -33,12 +45,11 @@ async def create_account(user_schema: UserSchema, session: Session = Depends(get
     
 @auth_router.post("/login")
 async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
+    '''Essa é a rota de login do nosso sistema. Ela deve receber o email e a senha do usuário, verificar se o email existe no banco de dados e se a senha está correta.
     '''
-    Essa é a rota de login do nosso sistema. Ela deve receber o email e a senha do usuário, verificar se o email existe no banco de dados e se a senha está correta.
-    '''
-    user = session.query(User).filter(User.email==login_schema.email).first()
+    user = auth_user(login_schema.email, login_schema.password, session)
     if not user:
-        raise HTTPException(status_code=400, detail="Usuário não encontrado!")
+        raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais inválidas!")
     else:
         access_token = criar_token(user.id)
         return {
