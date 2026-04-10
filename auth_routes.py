@@ -7,6 +7,11 @@ from schemas import UserSchema, LoginSchema
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
+
+def criar_token(user_id):
+    token = f"aimeucuzinho{user_id}1234567890"
+    return token
+
 @auth_router.get("/login")
 async def auth():
     '''
@@ -31,5 +36,16 @@ async def login(login_schema: LoginSchema, session: Session = Depends(get_sessio
     '''
     Essa é a rota de login do nosso sistema. Ela deve receber o email e a senha do usuário, verificar se o email existe no banco de dados e se a senha está correta.
     '''
-    return {"message": "Você está na rota de login!"}
+    user = session.query(User).filter(User.email==login_schema.email).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Usuário não encontrado!")
+    else:
+        access_token = criar_token(user.id)
+        return {
+            "access_token": access_token, 
+            "token_type": "bearer"
+            }
+        
+        # JWT Bearer
+        # header = {"Authorization": f"Bearer {access_token}"}
 
